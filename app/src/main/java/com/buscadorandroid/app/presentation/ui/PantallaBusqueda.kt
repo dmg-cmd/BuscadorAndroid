@@ -24,6 +24,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -44,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,6 +78,7 @@ fun PantallaBusqueda(
     val contexto = LocalContext.current
     var mostrarDialogoExt by remember { mutableStateOf(false) }
     var mostrarDialogoEliminar by remember { mutableStateOf(false) }
+    var mostrarAyuda by remember { mutableStateOf(false) }
     var mostrarDialogoEnviar by remember { mutableStateOf(false) }
     var archivoAEliminarIndividual by remember { mutableStateOf<Archivo?>(null) }
     var agruparPorCarpeta by remember { mutableStateOf(true) }
@@ -222,6 +225,12 @@ fun PantallaBusqueda(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { mostrarAyuda = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.Help,
+                            contentDescription = "Ayuda"
+                        )
+                    }
                     IconButton(onClick = { temaVm.ciclarModo() }) {
                         val iconoTema = when (modo) {
                             TemaModo.SISTEMA -> Icons.Filled.BrightnessAuto
@@ -890,6 +899,90 @@ fun PantallaBusqueda(
             onCompartir = { compartirArchivo(contexto, it) },
             onAbrirExterno = { abrirArchivo(contexto, it) }
         )
+
+        // Diálogo de ayuda con la explicación de los botones
+        if (mostrarAyuda) {
+            AlertDialog(
+                onDismissRequest = { mostrarAyuda = false },
+                confirmButton = {
+                    TextButton(onClick = { mostrarAyuda = false }) {
+                        Text("Entendido")
+                    }
+                },
+                title = { Text("Ayuda — BuscadorAndroid") },
+                text = {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        FilaAyuda(
+                            icono = Icons.Filled.Search,
+                            titulo = "Buscar",
+                            descripcion = "Escribe el nombre o el contenido del archivo y pulsa la lupa para buscar en todo el dispositivo (almacenamiento interno, SD, descargas, documentos y multimedia)."
+                        )
+                        FilaAyuda(
+                            icono = Icons.Filled.FilterList,
+                            titulo = "Tipos (Imágenes, Vídeos, Audio, Documentos, Otros)",
+                            descripcion = "Muestra solo los archivos del tipo seleccionado. Pulsa para activar o quitar el filtro."
+                        )
+                        FilaAyuda(
+                            icono = Icons.Filled.TextSnippet,
+                            titulo = "En contenido",
+                            descripcion = "Al activarlo, la búsqueda también mira dentro del texto de los documentos, no solo el nombre del archivo."
+                        )
+                        FilaAyuda(
+                            icono = Icons.Filled.Sort,
+                            titulo = "Orden",
+                            descripcion = "Cambia el orden de los resultados: relevancia, nombre, fecha, tamaño, tipo o carpeta."
+                        )
+                        FilaAyuda(
+                            icono = Icons.Filled.Folder,
+                            titulo = "Por carpeta",
+                            descripcion = "Agrupa los resultados según la carpeta donde están guardados."
+                        )
+                        FilaAyuda(
+                            icono = Icons.Filled.SelectAll,
+                            titulo = "Seleccionar todo",
+                            descripcion = "Marca o desmarca todos los resultados para luego copiarlos, moverlos, compartirlos o eliminarlos."
+                        )
+                        FilaAyuda(
+                            icono = Icons.Filled.BrightnessAuto,
+                            titulo = "Tema (sol / luna)",
+                            descripcion = "Alterna entre tema claro, oscuro o el que usa el sistema."
+                        )
+                        FilaAyuda(
+                            icono = Icons.Filled.Help,
+                            titulo = "Ayuda (?)",
+                            descripcion = "Muestra esta ventana de ayuda."
+                        )
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun FilaAyuda(icono: ImageVector, titulo: String, descripcion: String) {
+    Row(
+        modifier = Modifier.padding(vertical = 6.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            imageVector = icono,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(Modifier.width(10.dp))
+        Column {
+            Text(
+                text = titulo,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = descripcion,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }
 
