@@ -35,21 +35,15 @@ class BusquedaRepositoryImpl @Inject constructor(
             return@flow
         }
 
-        // Estrategia: si el índice tiene datos, usarlo (instantáneo); sino búsqueda en vivo.
-        val hayIndice = try { archivoDao.contar() > 0 } catch (_: Exception) { false }
+        // Búsqueda en vivo (MediaStore + FileSystem) como fuente de verdad.
+        // El índice se mantiene solo como caché de calentamiento para el Worker de
+        // indexación; NO se lee aquí para evitar resultados parciales cuando el
+        // índice aún no está completo (p.ej. si solo se indexaron imágenes).
+        // REGRESIÓN CORREGIDA: antes se leía el índice y, al estar incompleto,
+        // los videos (y otros tipos) dejaban de aparecer.
+        val resultados = buscarEnVivo(filtro)
 
-        val resultados = if (hayIndice) {
-            try {
-                val query = construirQueryIndice(filtro)
-                archivoDao.buscarRaw(query).map { it.aArchivo() }
-            } catch (_: Exception) {
-                buscarEnVivo(filtro)
-            }
-        } else {
-            buscarEnVivo(filtro)
-        }
-
-        // Actualiza el índice con lo encontrado para futuras búsquedas instantáneas
+        // Calienta el índice con lo encontrado (sin usarlo como respuesta).
         if (resultados.isNotEmpty()) {
             try {
                 archivoDao.insertarTodos(resultados.map { it.aIndice() })
