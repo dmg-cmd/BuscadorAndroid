@@ -13,8 +13,8 @@ android {
         applicationId = "com.buscadorandroid.app"
         minSdk = 26
         targetSdk = 35
-    versionCode = 26
-    versionName = "0.2.6"
+    versionCode = 27
+    versionName = "0.2.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -108,6 +108,12 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:$media3Version")
     implementation("androidx.media3:media3-ui:$media3Version")
     implementation("androidx.media3:media3-common:$media3Version")
+
+    // MiNube: cliente SMB/CIFS para carpeta de red en LAN (sin internet)
+    implementation("org.codelibs:jcifs:2.1.40")
+
+    // Credenciales de MiNube guardadas cifradas en el dispositivo
+    implementation("androidx.security:security-crypto:1.0.0")
 
     // Test
     testImplementation("junit:junit:4.13.2")

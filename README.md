@@ -22,14 +22,23 @@ y la app hace el resto.
 - **Tema claro / oscuro / sistema**, a tu gusto.
 - **Botón de ayuda (?).** Toca el signo de interrogación en la barra superior y se abre
   una ventana con explicaciones sencillas de cada botón.
+- **Conexión MiNube (SMB).** Toca el icono de carpeta compartida para conectarte a tu
+  **carpeta de red privada en la LAN** (un recurso SMB/CIFS como MiNube, un NAS o un
+  equipo de la red local). Desde allí puedes **explorar, subir y descargar** archivos;
+  toda la transferencia ocurre dentro de tu red y sin salir a internet.
 
 ---
 
 ## Privacidad
 
-- **Funciona sin internet.** La aplicación no tiene permiso de red: nada sale de tu
-  teléfono ni se envía a ningún servidor.
-- **Todo se hace en el dispositivo.** La búsqueda ocurre localmente, en tu propio teléfono.
+- **Conexión solo a tu red local.** La aplicación puede conectarse a la carpeta de red
+  que **tú configures** (protocolo SMB/CIFS en tu LAN). No se comunica con ningún servidor
+  en internet ni envía nada a la nube externa.
+- **Tus credenciales quedan en el teléfono.** El usuario, dominio y contraseña de MiNube
+  se guardan **cifrados** en el propio dispositivo (Android EncryptedSharedPreferences) y
+  nunca se comparten con nadie.
+- **La búsqueda es local.** Encontrar archivos en tu teléfono se hace enteramente en el
+  dispositivo, sin red.
 
 ---
 
@@ -58,8 +67,10 @@ La app necesita permisos para leer tus archivos. Aquí te explicamos para qué s
 | **Leer archivos multimedia** (imágenes, vídeos, audio) | Para poder encontrar y mostrar tus fotos, vídeos y música. |
 | **Leer almacenamiento** (en versiones antiguas de Android) | Lo mismo en teléfonos con Android 8 a 12. |
 | **Acceso a todos los archivos** (opcional) | Permite buscar **cualquier** archivo del teléfono, no solo los multimedia. Es útil para una búsqueda completa, pero es opcional: si lo deniegas, la app sigue funcionando y busca tus archivos multimedia y documentos. |
+| **Internet / estado de red** | Solo para conectarse a tu **carpeta de red MiNube (SMB)** dentro de tu LAN. La app no navega por internet ni sube nada a servidores externos. |
 
-Ningún permiso se usa para otra cosa distinta a buscar y mostrar tus archivos.
+Ningún permiso se usa para otra cosa distinta a buscar y mostrar tus archivos, o a
+conectarse (si tú lo decides) a tu propia carpeta de red local.
 
 ---
 
@@ -75,6 +86,32 @@ Ningún permiso se usa para otra cosa distinta a buscar y mostrar tus archivos.
 4. **Selecciona todo** (o uno a uno) para copiar, mover, compartir o borrar.
 5. ¿Dudas? Toca el **signo de interrogación (?)** arriba, al lado del icono de tema,
    y lee las explicaciones sencillas.
+
+---
+
+## Conexión MiNube (SMB)
+
+MiNube te permite dejar y recuperar archivos en una **carpeta de red privada** que tengas
+en tu red de casa o de trabajo (por ejemplo, un servidor MiNube, un NAS o un equipo
+compartiendo una carpeta por SMB/CIFS).
+
+**Requisitos**
+- Estar en la **misma red local (LAN)** que el equipo que comparte la carpeta.
+- Conocer la **dirección IP** (o nombre) del equipo, el **puerto** (por defecto 445), el
+  **nombre del recurso/compartido**, tu **usuario** y **contraseña** de acceso.
+- Que el recurso use el protocolo **SMB/CIFS** (lo habitual en Windows, NAS y MiNube).
+
+**Cómo conectarse**
+1. Toca el **icono de carpeta compartida** (arriba, junto al signo de ayuda).
+2. Rellena los datos de tu carpeta de red y pulsa **Conectar y guardar**.
+3. Si la conexión es correcta, verás los archivos y carpetas. Desde ahí puedes:
+   - **Subir aquí** los archivos que seleccionaste en la app.
+   - **Crear carpeta**, entrar en subcarpetas y **descargar** a tu teléfono.
+4. Tus datos se guardan cifrados; la próxima vez se conectará solo.
+
+> **Sugerencia:** si no tienes un servidor propio, puedes crear una carpeta compartida en
+> un equipo Windows o montar MiNube en tu red local. La transferencia es tan rápida como
+> lo permita tu Wi-Fi/LAN y no consume datos móviles.
 
 ---
 
@@ -96,7 +133,9 @@ https://github.com/dmg-cmd/BuscadorAndroid/releases
 ## Preguntas frecuentes
 
 **¿Mi teléfono envía mis archivos a internet?**
-No. La aplicación no tiene permiso de red; todo se procesa en el propio dispositivo.
+No, salvo que tú lo decidas. La búsqueda es local. La función MiNube solo se conecta a la
+carpeta de red que tú configures dentro de tu LAN (SMB/CIFS); nada se sube a servidores
+externos ni a la nube pública, y tus credenciales se guardan cifradas en el teléfono.
 
 **¿Por qué me sale un aviso al instalar?**
 Porque el instalador está firmado con una clave propia. Es normal en pruebas.

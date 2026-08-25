@@ -60,6 +60,7 @@ import com.buscadorandroid.app.presentation.component.*
 import com.buscadorandroid.app.presentation.viewmodel.BusquedaViewModel
 import com.buscadorandroid.app.presentation.theme.TemaModo
 import com.buscadorandroid.app.presentation.theme.TemaViewModel
+import com.buscadorandroid.app.presentation.viewmodel.MinubeViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import kotlinx.coroutines.CoroutineScope
@@ -76,9 +77,11 @@ fun PantallaBusqueda(
     val estado by viewModel.estado.collectAsState()
     val modo by temaVm.modo.collectAsState()
     val contexto = LocalContext.current
+    val minubeVm: MinubeViewModel = hiltViewModel()
     var mostrarDialogoExt by remember { mutableStateOf(false) }
     var mostrarDialogoEliminar by remember { mutableStateOf(false) }
     var mostrarAyuda by remember { mutableStateOf(false) }
+    var mostrarMinube by remember { mutableStateOf(false) }
     var mostrarDialogoEnviar by remember { mutableStateOf(false) }
     var archivoAEliminarIndividual by remember { mutableStateOf<Archivo?>(null) }
     var agruparPorCarpeta by remember { mutableStateOf(true) }
@@ -229,6 +232,12 @@ fun PantallaBusqueda(
                         Icon(
                             imageVector = Icons.Filled.Help,
                             contentDescription = "Ayuda"
+                        )
+                    }
+                    IconButton(onClick = { mostrarMinube = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.FolderShared,
+                            contentDescription = "MiNube (carpeta de red)"
                         )
                     }
                     IconButton(onClick = { temaVm.ciclarModo() }) {
@@ -818,13 +827,18 @@ fun PantallaBusqueda(
             }
         }
 
-        // Diálogo para enviar archivos a la Nube o Copiar/Mover a carpeta local
+        // Diálogo para enviar archivos a la Nube, MiNube (SMB) o Copiar/Mover a carpeta local
         DialogoEnviarArchivos(
             mostrar = mostrarDialogoEnviar,
             cantidadArchivos = archivosAProcesar.size,
             onDismiss = { mostrarDialogoEnviar = false },
             onEnviarNube = {
                 enviarANube(contexto, archivosAProcesar)
+            },
+            onSubirMinube = {
+                mostrarDialogoEnviar = false
+                minubeVm.definirCola(archivosAProcesar)
+                mostrarMinube = true
             },
             onCopiarCarpeta = {
                 launcherSeleccionarCarpetaCopiar.launch(null)
@@ -833,6 +847,14 @@ fun PantallaBusqueda(
                 launcherSeleccionarCarpetaMover.launch(null)
             }
         )
+
+        // Explorador MiNube (SMB/CIFS) en la LAN
+        if (mostrarMinube) {
+            ExploradorMinube(
+                onCerrar = { mostrarMinube = false },
+                viewModel = minubeVm
+            )
+        }
 
         // Diálogo de confirmación de eliminación / papelera
         DialogoConfirmarEliminar(

@@ -21,6 +21,7 @@ fun DialogoEnviarArchivos(
     cantidadArchivos: Int,
     onDismiss: () -> Unit,
     onEnviarNube: () -> Unit,
+    onSubirMinube: () -> Unit,
     onCopiarCarpeta: () -> Unit,
     onMoverCarpeta: () -> Unit
 ) {
@@ -47,6 +48,16 @@ fun DialogoEnviarArchivos(
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
+
+                OpcionEnvioItem(
+                    icono = Icons.Default.FolderShared,
+                    titulo = "Subir a MiNube",
+                    subtitulo = "Tu carpeta de red privada en la LAN (SMB)",
+                    onClick = {
+                        onDismiss()
+                        onSubirMinube()
+                    }
+                )
 
                 OpcionEnvioItem(
                     icono = Icons.Default.CloudUpload,
