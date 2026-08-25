@@ -32,5 +32,10 @@ local.properties
 # Logs y temporales
 *.log
 
+# Claves de firma (no se suben al repo)
+*.jks
+*.keystore
+keystore.properties
+
 # OS
 ehthumbs.db
