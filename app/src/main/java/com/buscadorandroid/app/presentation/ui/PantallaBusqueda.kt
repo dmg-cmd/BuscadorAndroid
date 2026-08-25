@@ -206,7 +206,7 @@ fun PantallaBusqueda(
                         Image(
                             painter = painterResource(com.buscadorandroid.app.R.drawable.logo_buscador),
                             contentDescription = "Logo BuscadorAndroid",
-                            modifier = Modifier.size(30.dp)
+                            modifier = Modifier.height(30.dp).wrapContentWidth()
                         )
                         Surface(
                             shape = MaterialTheme.shapes.small,
