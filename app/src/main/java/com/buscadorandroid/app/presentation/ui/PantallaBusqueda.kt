@@ -27,6 +27,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.DropdownMenu
@@ -201,7 +203,11 @@ fun PantallaBusqueda(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("BuscadorAndroid")
+                        Image(
+                            painter = painterResource(com.buscadorandroid.app.R.drawable.logo_buscador),
+                            contentDescription = "Logo BuscadorAndroid",
+                            modifier = Modifier.size(30.dp)
+                        )
                         Surface(
                             shape = MaterialTheme.shapes.small,
                             color = MaterialTheme.colorScheme.primaryContainer,

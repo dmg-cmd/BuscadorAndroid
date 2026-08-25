@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Fondo redondeado de marca -->
+    <path
+        android:fillColor="#0B57D0"
+        android:pathData="M10 10 h28 a8 8 0 0 1 8 8 v12 a8 8 0 0 1 -8 8 h-28 a8 8 0 0 1 -8 -8 v-12 a8 8 0 0 1 8 -8 z" />
+
+    <!-- Lupa (logo) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.4"
+        android:strokeLineCap="round"
+        android:pathData="M19 19 a7 7 0 1 0 0.1 0 z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M24 24 L31 31" />
+</vector>
