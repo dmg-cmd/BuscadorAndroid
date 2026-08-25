@@ -52,6 +52,8 @@ import com.buscadorandroid.app.domain.model.FiltroBusqueda
 import com.buscadorandroid.app.domain.model.OrdenBusqueda
 import com.buscadorandroid.app.presentation.component.*
 import com.buscadorandroid.app.presentation.viewmodel.BusquedaViewModel
+import com.buscadorandroid.app.presentation.theme.TemaModo
+import com.buscadorandroid.app.presentation.theme.TemaViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import kotlinx.coroutines.CoroutineScope
@@ -62,9 +64,11 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PantallaBusqueda(
-    viewModel: BusquedaViewModel = hiltViewModel()
+    viewModel: BusquedaViewModel = hiltViewModel(),
+    temaVm: TemaViewModel = hiltViewModel()
 ) {
     val estado by viewModel.estado.collectAsState()
+    val modo by temaVm.modo.collectAsState()
     val contexto = LocalContext.current
     var mostrarDialogoExt by remember { mutableStateOf(false) }
     var mostrarDialogoEliminar by remember { mutableStateOf(false) }
@@ -210,6 +214,17 @@ fun PantallaBusqueda(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { temaVm.ciclarModo() }) {
+                        val iconoTema = when (modo) {
+                            TemaModo.SISTEMA -> Icons.Filled.BrightnessAuto
+                            TemaModo.CLARO -> Icons.Filled.LightMode
+                            TemaModo.OSCURO -> Icons.Filled.DarkMode
+                        }
+                        Icon(
+                            imageVector = iconoTema,
+                            contentDescription = "Cambiar tema (actual: $modo)"
+                        )
+                    }
                     if (estado.filtro.tieneFiltrosActivos && !estado.haySeleccion) {
                         TextButton(onClick = { viewModel.limpiarFiltros() }) {
                             Text("Limpiar filtros")
