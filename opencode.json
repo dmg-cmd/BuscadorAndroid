@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "default_agent": "build",
+  "agent": {
+    "build": {
+      "description": "Agente principal para desarrollo de BuscadorAndroid. Comunica y piensa EXCLUSIVAMENTE en español.",
+      "prompt": "Eres el agente principal del proyecto BuscadorAndroid. REGLA INQUEBRANTABLE: toda comunicación, comentarios de código, mensajes de commit y documentación deben ser EXCLUSIVAMENTE en español (el razonamiento interno también). Aplica la regla de versionado de AGENTS.md: en cada cambio incrementa versionName/versionCode en app/build.gradle.kts y refléjalo en la barra superior de la app."
+    }
+  }
+}

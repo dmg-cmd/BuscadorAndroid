@@ -1,0 +1,36 @@
+# Compilados
+*.class
+*.apk
+*.aar
+*.ap_
+*.aab
+*.dex
+*.jar
+*.war
+
+# Directorios de build
+build/
+.gradle/
+app/build/
+captures/
+
+# IDE / editor
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Config local (ruta del SDK, etc.)
+local.properties
+
+# Logs y temporales
+*.log
+
+# OS
+ehthumbs.db

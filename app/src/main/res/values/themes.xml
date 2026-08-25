@@ -1,0 +1,4 @@
+<resources>
+    <!-- Tema base para manifest, Compose usa su propio theme en código -->
+    <style name="Theme.BuscadorAndroid" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

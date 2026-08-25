@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">BuscadorAndroid</string>
+    <string name="buscar_hint">Buscar archivos...</string>
+    <string name="sin_resultados">No se encontraron archivos para "%1$s"</string>
+    <string name="archivos_encontrados">%1$d archivos encontrados en %2$.2f s</string>
+    <string name="conceder_permisos">Conceder permisos</string>
+    <string name="permiso_requerido_titulo">Permisos necesarios</string>
+    <string name="permiso_requerido_desc">Para buscar en todo el celular necesitamos acceso a tus archivos. Sin esto solo veremos resultados limitados.</string>
+    <string name="busqueda_profunda">Búsqueda profunda (acceso total)</string>
+    <string name="busqueda_profunda_desc">Actívalo para buscar también en carpetas del sistema, WhatsApp, descargas ocultas, etc.</string>
+    <string name="filtro_tipo">Tipo</string>
+    <string name="filtro_extension">Extensión</string>
+    <string name="accion_abrir">Abrir</string>
+    <string name="accion_compartir">Compartir</string>
+    <string name="accion_eliminar">Eliminar</string>
+    <string name="accion_info">Propiedades</string>
+    <string name="accion_copiar_ruta">Copiar ruta</string>
+</resources>
