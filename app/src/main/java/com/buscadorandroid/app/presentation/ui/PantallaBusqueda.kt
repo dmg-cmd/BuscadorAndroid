@@ -912,45 +912,50 @@ fun PantallaBusqueda(
                 title = { Text("Ayuda — BuscadorAndroid") },
                 text = {
                     Column(Modifier.verticalScroll(rememberScrollState())) {
+                        Text(
+                            text = "Esta aplicación sirve para encontrar archivos que tienes guardados en el teléfono. Aquí te explicamos, de forma sencilla, para qué sirve cada botón:",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(Modifier.height(8.dp))
                         FilaAyuda(
                             icono = Icons.Filled.Search,
                             titulo = "Buscar",
-                            descripcion = "Escribe el nombre o el contenido del archivo y pulsa la lupa para buscar en todo el dispositivo (almacenamiento interno, SD, descargas, documentos y multimedia)."
+                            descripcion = "Escribe aquí el nombre del archivo que buscas (por ejemplo \"fotos de playa\") o una palabra que sepas que tiene dentro. Luego toca la lupa y la app revisa todo el teléfono: la memoria interna, la tarjeta SD, las descargas y tus documentos, fotos o vídeos."
                         )
                         FilaAyuda(
                             icono = Icons.Filled.FilterList,
                             titulo = "Tipos (Imágenes, Vídeos, Audio, Documentos, Otros)",
-                            descripcion = "Muestra solo los archivos del tipo seleccionado. Pulsa para activar o quitar el filtro."
+                            descripcion = "Sirve para no verse de todo a la vez. Toca la opción que te interesa y la app mostrará solo ese tipo de archivos. Vuelve a tocarla para quitar ese filtro y verlos todos otra vez."
                         )
                         FilaAyuda(
                             icono = Icons.Filled.TextSnippet,
                             titulo = "En contenido",
-                            descripcion = "Al activarlo, la búsqueda también mira dentro del texto de los documentos, no solo el nombre del archivo."
+                            descripcion = "Por lo general la app busca por el nombre del archivo. Activa esta opción si quieres que también busque palabras escritas DENTRO de los documentos (por ejemplo, dentro de un PDF o de un archivo de texto)."
                         )
                         FilaAyuda(
                             icono = Icons.Filled.Sort,
                             titulo = "Orden",
-                            descripcion = "Cambia el orden de los resultados: relevancia, nombre, fecha, tamaño, tipo o carpeta."
+                            descripcion = "Los resultados pueden aparecer en distinto orden. Toca este botón para elegir cómo prefieres verlos: los más parecidos a lo que buscaste, por nombre, por fecha, por tamaño, por tipo o por carpeta."
                         )
                         FilaAyuda(
                             icono = Icons.Filled.Folder,
                             titulo = "Por carpeta",
-                            descripcion = "Agrupa los resultados según la carpeta donde están guardados."
+                            descripcion = "En lugar de una lista larga, los resultados se ordenan por la carpeta donde están guardados, para que sea más fácil ubicarlos."
                         )
                         FilaAyuda(
                             icono = Icons.Filled.SelectAll,
                             titulo = "Seleccionar todo",
-                            descripcion = "Marca o desmarca todos los resultados para luego copiarlos, moverlos, compartirlos o eliminarlos."
+                            descripcion = "Marca de golpe todos los archivos que salieron en la búsqueda (o quita la marca). Así puedes copiarlos, moverlos, enviarlos o borrarlos todos juntos."
                         )
                         FilaAyuda(
                             icono = Icons.Filled.BrightnessAuto,
                             titulo = "Tema (sol / luna)",
-                            descripcion = "Alterna entre tema claro, oscuro o el que usa el sistema."
+                            descripcion = "Cambia el aspecto de la pantalla. Toca para pasar de claro a oscuro, o para dejarlo igual que el resto del teléfono (claro u oscuro según tenga configurado el sistema)."
                         )
                         FilaAyuda(
                             icono = Icons.Filled.Help,
                             titulo = "Ayuda (?)",
-                            descripcion = "Muestra esta ventana de ayuda."
+                            descripcion = "Muestra esta misma ventana con explicaciones sencillas de los botones."
                         )
                     }
                 }
