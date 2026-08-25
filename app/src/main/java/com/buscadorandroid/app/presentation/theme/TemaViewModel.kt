@@ -24,10 +24,11 @@ class TemaViewModel @Inject constructor(application: Application) : AndroidViewM
     val modo = _modo.asStateFlow()
 
     private fun leerModo(): TemaModo {
-        return when (prefs.getString(CLAVE, TemaModo.SISTEMA.name)) {
+        // Por defecto la app arranca en modo oscuro.
+        return when (prefs.getString(CLAVE, TemaModo.OSCURO.name)) {
             TemaModo.CLARO.name -> TemaModo.CLARO
             TemaModo.OSCURO.name -> TemaModo.OSCURO
-            else -> TemaModo.SISTEMA
+            else -> TemaModo.OSCURO
         }
     }
 

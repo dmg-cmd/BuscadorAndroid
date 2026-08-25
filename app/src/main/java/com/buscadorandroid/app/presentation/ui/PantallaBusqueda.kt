@@ -23,8 +23,10 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.DropdownMenu
@@ -295,24 +297,38 @@ fun PantallaBusqueda(
                     }
                 )
 
-                // Controles de orden y búsqueda en contenido
+                // Controles unificados en una sola fila (mismo estilo, icono diferenciador)
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    FilterChip(
-                        selected = estado.filtro.buscarEnContenido,
+                    // En contenido (alterna)
+                    OutlinedButton(
                         onClick = { viewModel.toggleBuscarEnContenido() },
-                        label = { Text("En contenido") },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                    )
+                        modifier = Modifier.height(34.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = if (estado.filtro.buscarEnContenido) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                        )
+                    ) {
+                        Icon(Icons.Default.TextSnippet, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("En contenido", style = MaterialTheme.typography.labelSmall)
+                    }
 
+                    // Orden (abre menú)
                     Box {
-                        OutlinedButton(onClick = { mostrarMenuOrden = true }) {
+                        OutlinedButton(
+                            onClick = { mostrarMenuOrden = true },
+                            modifier = Modifier.height(34.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+                        ) {
                             Icon(Icons.Default.Sort, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Orden: ${estado.filtro.orden.etiqueta}")
+                            Text("Orden", style = MaterialTheme.typography.labelSmall)
                         }
                         DropdownMenu(
                             expanded = mostrarMenuOrden,
@@ -331,6 +347,50 @@ fun PantallaBusqueda(
                                 )
                             }
                         }
+                    }
+
+                    // Por carpeta (alterna agrupación)
+                    OutlinedButton(
+                        onClick = {
+                            agruparPorCarpeta = !agruparPorCarpeta
+                            carpetaSeleccionada = null
+                        },
+                        modifier = Modifier.height(34.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = if (agruparPorCarpeta) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (agruparPorCarpeta) Icons.Default.Folder else Icons.Default.FolderOpen,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Por carpeta", style = MaterialTheme.typography.labelSmall)
+                    }
+
+                    // Seleccionar todo / Deseleccionar todo
+                    OutlinedButton(
+                        onClick = {
+                            if (estado.todosSeleccionados) viewModel.deseleccionarTodos() else viewModel.seleccionarTodos()
+                        },
+                        modifier = Modifier.height(34.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = if (estado.todosSeleccionados) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (estado.todosSeleccionados) Icons.Default.Deselect else Icons.Default.SelectAll,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (estado.todosSeleccionados) "Deseleccionar todo" else "Seleccionar todo",
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
                 }
 
@@ -428,83 +488,16 @@ fun PantallaBusqueda(
                         }
                     }
                     else -> {
-                        // Barra de controles de resultados
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 2.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = if (agruparPorCarpeta && carpetaSeleccionada == null) {
-                                        "${gruposPorCarpeta.size} carpetas (${estado.resultados.size} archivos)"
-                                    } else {
-                                        "${estado.resultados.size} archivos (${estado.tiempoBusquedaMs}ms)"
-                                    },
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    // Botón para alternar agrupación por carpeta
-                                    FilterChip(
-                                        selected = agruparPorCarpeta,
-                                        onClick = {
-                                            agruparPorCarpeta = !agruparPorCarpeta
-                                            carpetaSeleccionada = null
-                                        },
-                                        label = { Text("Por carpeta") },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = if (agruparPorCarpeta) Icons.Default.Folder else Icons.Default.FolderOpen,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    )
-
-                                    // Botón para deseleccionar cuando se marca individualmente
-                                    if (estado.haySeleccion && !estado.todosSeleccionados) {
-                                        FilledTonalButton(
-                                            onClick = { viewModel.deseleccionarTodos() },
-                                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-                                        ) {
-                                            Icon(Icons.Default.Clear, contentDescription = null, modifier = Modifier.size(16.dp))
-                                            Spacer(modifier = Modifier.width(2.dp))
-                                            Text("Deseleccionar (${estado.cantidadSeleccionados})", style = MaterialTheme.typography.labelSmall)
-                                        }
-                                    }
-
-                                    // Botón Seleccionar todo / Deseleccionar todo
-                                    OutlinedButton(
-                                        onClick = {
-                                            if (estado.todosSeleccionados) {
-                                                viewModel.deseleccionarTodos()
-                                            } else {
-                                                viewModel.seleccionarTodos()
-                                            }
-                                        },
-                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = if (estado.todosSeleccionados) Icons.Default.Deselect else Icons.Default.SelectAll,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = if (estado.todosSeleccionados) "Deseleccionar todo" else "Seleccionar todo",
-                                            style = MaterialTheme.typography.labelSmall
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        // Contador de resultados (los controles están en la fila superior unificada)
+                        Text(
+                            text = if (agruparPorCarpeta && carpetaSeleccionada == null) {
+                                "${gruposPorCarpeta.size} carpetas (${estado.resultados.size} archivos)"
+                            } else {
+                                "${estado.resultados.size} archivos (${estado.tiempoBusquedaMs}ms)"
+                            },
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
 
                         // Vista cuando se está dentro de una carpeta seleccionada
                         if (agruparPorCarpeta && carpetaSeleccionada != null) {
