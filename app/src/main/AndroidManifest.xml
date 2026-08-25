@@ -38,6 +38,19 @@
             </intent-filter>
         </activity>
 
+        <!-- WorkManager: inicialización bajo demanda (configurada en BuscadorApp).
+             WorkManager se registra vía App Startup; removemos solo su inicializador
+             para evitar el de por defecto y los avisos de lint. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                tools:node="remove" />
+        </provider>
+
     </application>
 
 </manifest>
