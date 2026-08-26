@@ -1,8 +1,11 @@
 package com.buscadorandroid.app.presentation.viewmodel
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
+import java.io.File
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.buscadorandroid.app.data.MinubeSettingsRepository
@@ -265,6 +268,74 @@ class MinubeViewModel @Inject constructor(
 
     fun definirCola(archivos: List<Archivo>) {
         _estado.value = _estado.value.copy(colaSubida = archivos)
+    }
+
+    /**
+     * Abre un archivo de la nube con la aplicación del sistema (galería, vídeo, música, etc.).
+     * Lo descarga primero a la caché del teléfono y luego lanza un Intent ACTION_VIEW
+     * con un Uri de FileProvider, para no salir de la red local.
+     */
+    fun abrir(entrada: EntradaSmb) {
+        val cfg = cfgActual ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            _estado.value = _estado.value.copy(
+                progreso = ProgresoMinube(0, 0, "Abriendo ${entrada.nombre}...")
+            )
+            val resultado = descargarArchivoTemporal(cfg, entrada)
+            _estado.value = _estado.value.copy(progreso = null)
+            resultado.onSuccess { archivo ->
+                try {
+                    val uri = FileProvider.getUriForFile(
+                        contexto,
+                        contexto.packageName + ".fileprovider",
+                        archivo
+                    )
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(uri, mimeDesde(entrada.nombre))
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    contexto.startActivity(intent)
+                } catch (e: Exception) {
+                    _estado.value = _estado.value.copy(mensaje = "No se pudo abrir: ${e.message}")
+                }
+            }.onFailure { e ->
+                _estado.value = _estado.value.copy(mensaje = "No se pudo abrir: ${e.message}")
+            }
+        }
+    }
+
+    private suspend fun descargarArchivoTemporal(
+        cfg: MinubeConfig,
+        entrada: EntradaSmb
+    ): Result<File> = kotlin.runCatching {
+        val dir = File(contexto.cacheDir, "minube_preview")
+        dir.mkdirs()
+        val nombreSeguro = entrada.nombre.replace(Regex("[^\\w.\\- ]"), "_")
+        val destino = File(dir, nombreSeguro)
+        destino.outputStream().use { salida ->
+            repositorio.descargar(cfg, entrada, salida).getOrThrow()
+        }
+        destino
+    }
+
+    private fun mimeDesde(nombre: String): String {
+        return when (nombre.substringAfterLast('.', "").lowercase()) {
+            "jpg", "jpeg" -> "image/jpeg"
+            "png" -> "image/png"
+            "gif" -> "image/gif"
+            "webp" -> "image/webp"
+            "bmp" -> "image/bmp"
+            "mp4", "m4v", "3gp", "webm" -> "video/mp4"
+            "mkv" -> "video/x-matroska"
+            "mov" -> "video/quicktime"
+            "mp3" -> "audio/mpeg"
+            "wav" -> "audio/wav"
+            "ogg", "oga" -> "audio/ogg"
+            "m4a" -> "audio/mp4"
+            "flac" -> "audio/flac"
+            "pdf" -> "application/pdf"
+            else -> "*/*"
+        }
     }
 
     fun limpiarMensaje() {

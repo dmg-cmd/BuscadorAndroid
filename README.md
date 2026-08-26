@@ -110,7 +110,10 @@ compartiendo una carpeta por SMB/CIFS).
    - **Volver atrás:** toca la flecha hacia arriba (o la flecha de atrás) para subir un nivel
      a la carpeta superior; la equis (X) cierra el explorador.
    - **Buscar:** escribe en el buscador para encontrar archivos dentro de esa carpeta y sus
-     subcarpetas. Toca un resultado para ir a su ubicación o seleccionarlo y descargarlo.
+     subcarpetas. Toca un resultado para ir a su ubicacion o seleccionarlo y descargarlo.
+   - **Ver y escuchar:** toca un archivo de imagen, vídeo o música para abrirlo con el visor
+     del sistema (galería, reproductor de vídeo o de música). La app descarga una copia
+     temporal en el teléfono para poder abrirlo; todo ocurre en tu red local.
 4. Tus datos se guardan cifrados; la próxima vez se conectará solo.
 
 > **Sugerencia:** si no tienes un servidor propio, puedes crear una carpeta compartida en

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Archivos temporales de MiNube para previsualizar/abrir en el visor del sistema -->
+    <cache-path name="minube_preview" path="minube_preview" />
+</paths>

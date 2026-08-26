@@ -310,7 +310,7 @@ private fun FilaEntrada(
                     if (buscando) viewModel.irA(e.ruta)
                     else viewModel.entrarCarpeta(e.nombre)
                 } else {
-                    viewModel.toggleSeleccion(e.ruta)
+                    viewModel.abrir(e)
                 }
             }
             .padding(12.dp),
@@ -336,6 +336,11 @@ private fun FilaEntrada(
                     Archivo.formatearTamano(e.tamanoBytes),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    "Toca para abrir",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
