@@ -44,11 +44,25 @@ fun ExploradorMinube(
     val estado by viewModel.estado.collectAsState()
     val contexto = LocalContext.current
     var mostrarDialogoCarpeta by remember { mutableStateOf(false) }
+    var pendienteDescarga by remember { mutableStateOf<List<EntradaSmb>>(emptyList()) }
+    var esMovimiento by remember { mutableStateOf(false) }
+    var entradaPorEliminar by remember { mutableStateOf<EntradaSmb?>(null) }
 
     val launcherCarpetaLocal = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
-        if (uri != null) viewModel.descargar(uri)
+        if (uri != null && pendienteDescarga.isNotEmpty()) {
+            viewModel.descargar(uri, pendienteDescarga, esMovimiento)
+            pendienteDescarga = emptyList()
+            esMovimiento = false
+        }
+    }
+
+    fun iniciarDescarga(entradas: List<EntradaSmb>, mover: Boolean) {
+        if (entradas.isEmpty()) return
+        pendienteDescarga = entradas
+        esMovimiento = mover
+        launcherCarpetaLocal.launch(null)
     }
 
     LaunchedEffect(estado.mensaje) {
@@ -105,7 +119,18 @@ fun ExploradorMinube(
                 },
                 bottomBar = {
                     if (estado.fase == FaseMinube.CONECTADO) {
-                        BarraAcciones(estado, viewModel, launcherCarpetaLocal)
+                        BarraAcciones(
+                            estado = estado,
+                            viewModel = viewModel,
+                            onDescargarSeleccion = {
+                                iniciarDescarga(
+                                    estado.entradas.filter {
+                                        it.ruta in estado.seleccion && !it.esDirectorio
+                                    },
+                                    false
+                                )
+                            }
+                        )
                     }
                 }
             ) { padding ->
@@ -146,7 +171,10 @@ fun ExploradorMinube(
                                     estado = estado,
                                     viewModel = viewModel,
                                     buscando = estado.buscando,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    onDescargar = { iniciarDescarga(listOf(it), false) },
+                                    onMover = { iniciarDescarga(listOf(it), true) },
+                                    onEliminar = { entradaPorEliminar = it }
                                 )
                             }
                         }
@@ -186,6 +214,29 @@ fun ExploradorMinube(
             },
             dismissButton = {
                 TextButton(onClick = { mostrarDialogoCarpeta = false }) { Text("Cancelar") }
+            }
+        )
+    }
+
+    if (entradaPorEliminar != null) {
+        val nombre = entradaPorEliminar!!.nombre
+        AlertDialog(
+            onDismissRequest = { entradaPorEliminar = null },
+            title = { Text("Eliminar de MiNube") },
+            text = {
+                Text(
+                    "¿Seguro que quieres eliminar '$nombre' de la carpeta de red? " +
+                        "Esta acción no se puede deshacer."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.eliminar(entradaPorEliminar!!)
+                    entradaPorEliminar = null
+                }) { Text("Eliminar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { entradaPorEliminar = null }) { Text("Cancelar") }
             }
         )
     }
@@ -267,7 +318,10 @@ private fun ListaContenido(
     estado: MinubeUiState,
     viewModel: MinubeViewModel,
     buscando: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDescargar: (EntradaSmb) -> Unit,
+    onMover: (EntradaSmb) -> Unit,
+    onEliminar: (EntradaSmb) -> Unit
 ) {
     Column(modifier) {
         Text(
@@ -289,7 +343,15 @@ private fun ListaContenido(
         }
         LazyColumn(Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
             items(estado.entradas, key = { it.ruta }) { e ->
-                FilaEntrada(e, estado.seleccion.contains(e.ruta), viewModel, buscando)
+                FilaEntrada(
+                    e = e,
+                    seleccionada = estado.seleccion.contains(e.ruta),
+                    viewModel = viewModel,
+                    buscando = buscando,
+                    onDescargar = onDescargar,
+                    onMover = onMover,
+                    onEliminar = onEliminar
+                )
             }
         }
     }
@@ -300,8 +362,12 @@ private fun FilaEntrada(
     e: EntradaSmb,
     seleccionada: Boolean,
     viewModel: MinubeViewModel,
-    buscando: Boolean
+    buscando: Boolean,
+    onDescargar: (EntradaSmb) -> Unit,
+    onMover: (EntradaSmb) -> Unit,
+    onEliminar: (EntradaSmb) -> Unit
 ) {
+    var menuAbierto by remember { mutableStateOf(false) }
     Row(
         Modifier
             .fillMaxWidth()
@@ -344,6 +410,30 @@ private fun FilaEntrada(
                 )
             }
         }
+        Box {
+            IconButton(onClick = { menuAbierto = true }) {
+                Icon(Icons.Filled.MoreVert, "Más acciones")
+            }
+            DropdownMenu(
+                expanded = menuAbierto,
+                onDismissRequest = { menuAbierto = false }
+            ) {
+                if (!e.esDirectorio) {
+                    DropdownMenuItem(
+                        text = { Text("Descargar al teléfono") },
+                        onClick = { menuAbierto = false; onDescargar(e) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Mover al teléfono (borra de la nube)") },
+                        onClick = { menuAbierto = false; onMover(e) }
+                    )
+                }
+                DropdownMenuItem(
+                    text = { Text("Eliminar de MiNube") },
+                    onClick = { menuAbierto = false; onEliminar(e) }
+                )
+            }
+        }
         if (!e.esDirectorio) {
             Checkbox(
                 checked = seleccionada,
@@ -357,7 +447,7 @@ private fun FilaEntrada(
 private fun BarraAcciones(
     estado: MinubeUiState,
     viewModel: MinubeViewModel,
-    launcherCarpeta: androidx.activity.result.ActivityResultLauncher<android.net.Uri?>
+    onDescargarSeleccion: () -> Unit
 ) {
     Surface(tonalElevation = 4.dp) {
         Row(
@@ -372,7 +462,7 @@ private fun BarraAcciones(
                 }
             }
             if (estado.seleccion.isNotEmpty()) {
-                OutlinedButton(onClick = { launcherCarpeta.launch(null) }, Modifier.weight(1f)) {
+                OutlinedButton(onClick = onDescargarSeleccion, Modifier.weight(1f)) {
                     Icon(Icons.Filled.Download, null)
                     Spacer(Modifier.width(6.dp))
                     Text("Descargar (${estado.seleccion.size})")

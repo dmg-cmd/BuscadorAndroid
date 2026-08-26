@@ -25,8 +25,9 @@ y la app hace el resto.
 - **Conexión MiNube (SMB).** Toca el icono de carpeta compartida para conectarte a tu
   **carpeta de red privada en la LAN** (un recurso SMB/CIFS como MiNube, un NAS o un
   equipo de la red local). Desde allí puedes **explorar, subir, descargar y abrir
-  (previsualizar imágenes, vídeos y música)** archivos; toda la transferencia ocurre
-  dentro de tu red y sin salir a internet.
+  (previsualizar imágenes, vídeos y música)** archivos; también **copiar al teléfono**,
+  **mover al teléfono** (descarga y borra de la nube) y **eliminar** archivos o carpetas
+  de la nube. Toda la transferencia ocurre dentro de tu red y sin salir a internet.
 
 ---
 

@@ -40,4 +40,7 @@ interface MinubeRepository {
         salida: OutputStream,
         onProgreso: (bytes: Long, total: Long) -> Unit = { _, _ -> }
     ): Result<Unit>
+
+    /** Elimina una entrada (archivo o carpeta, de forma recursiva) de la nube remota. */
+    suspend fun eliminar(cfg: MinubeConfig, entrada: EntradaSmb): Result<Unit>
 }

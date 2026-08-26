@@ -215,19 +215,27 @@ class MinubeViewModel @Inject constructor(
         _estado.value = _estado.value.copy(seleccion = sel)
     }
 
-    fun descargar(treeUri: Uri) {
+    /** Devuelve las entradas marcadas en la selección (solo archivos). */
+    private fun entradasSeleccionadas(): List<EntradaSmb> =
+        _estado.value.entradas.filter { it.ruta in _estado.value.seleccion && !it.esDirectorio }
+
+    /**
+     * Descarga una o varias entradas a la carpeta del teléfono elegida (treeUri).
+     * Si [eliminarOrigen] es true, tras descargar cada archivo lo borra de la nube
+     * (equivalente a "mover al teléfono").
+     */
+    fun descargar(treeUri: Uri, entradas: List<EntradaSmb>, eliminarOrigen: Boolean = false) {
         val cfg = cfgActual ?: return
-        val seleccionadas = _estado.value.entradas.filter {
-            it.ruta in _estado.value.seleccion && !it.esDirectorio
-        }
-        if (seleccionadas.isEmpty()) return
+        val lista = entradas.filter { !it.esDirectorio }
+        if (lista.isEmpty()) return
         val tree = DocumentFile.fromTreeUri(contexto, treeUri) ?: return
+        val texto = if (eliminarOrigen) "Moviendo" else "Descargando"
         _estado.value = _estado.value.copy(
-            progreso = ProgresoMinube(0, 0, "Descargando ${seleccionadas.size} archivo(s)...")
+            progreso = ProgresoMinube(0, 0, "$texto ${lista.size} archivo(s)...")
         )
         viewModelScope.launch(Dispatchers.IO) {
             var fallos = 0
-            seleccionadas.forEach { entrada ->
+            lista.forEach { entrada ->
                 try {
                     val mime = when (entrada.nombre.substringAfterLast('.', "").lowercase()) {
                         "jpg", "jpeg" -> "image/jpeg"
@@ -237,20 +245,49 @@ class MinubeViewModel @Inject constructor(
                         "pdf" -> "application/pdf"
                         else -> "application/octet-stream"
                     }
-                    val dest = tree.createFile(mime, entrada.nombre) ?: return@forEach
+                    val dest = tree.createFile(mime, entrada.nombre) ?: run { fallos++; return@forEach }
                     contexto.contentResolver.openOutputStream(dest.uri)?.use { out ->
                         repositorio.descargar(cfg, entrada, out)
-                            .onFailure { fallos++ }
-                    } ?: run { fallos++ }
+                            .onFailure { fallos++; return@use }
+                    } ?: run { fallos++; return@forEach }
+                    if (eliminarOrigen) {
+                        repositorio.eliminar(cfg, entrada).onFailure { fallos++ }
+                    }
                 } catch (e: Exception) {
                     fallos++
                 }
             }
+            val accion = if (eliminarOrigen) "Movido" else "Descarga"
             _estado.value = _estado.value.copy(
                 seleccion = emptySet(),
                 progreso = null,
-                mensaje = if (fallos == 0) "Descarga completada" else "Descarga terminada con $fallos error(es)"
+                mensaje = if (fallos == 0) "$accion completado" else "$accion terminado con $fallos error(es)"
             )
+            if (eliminarOrigen) listar(_estado.value.rutaActual)
+        }
+    }
+
+    /** Elimina una entrada (archivo o carpeta) de la nube remota. */
+    fun eliminar(entrada: EntradaSmb) {
+        val cfg = cfgActual ?: return
+        _estado.value = _estado.value.copy(
+            progreso = ProgresoMinube(0, 0, "Eliminando ${entrada.nombre}...")
+        )
+        viewModelScope.launch(Dispatchers.IO) {
+            repositorio.eliminar(cfg, entrada)
+                .onSuccess {
+                    _estado.value = _estado.value.copy(
+                        progreso = null,
+                        mensaje = "Eliminado: ${entrada.nombre}"
+                    )
+                    listar(_estado.value.rutaActual)
+                }
+                .onFailure { e ->
+                    _estado.value = _estado.value.copy(
+                        progreso = null,
+                        mensaje = "No se pudo eliminar: ${e.message}"
+                    )
+                }
         }
     }
 

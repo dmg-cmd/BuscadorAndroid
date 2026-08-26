@@ -137,6 +137,23 @@ class SmbMinubeRepository @Inject constructor() : MinubeRepository {
         }
     }
 
+    override suspend fun eliminar(cfg: MinubeConfig, entrada: EntradaSmb): Result<Unit> = runCatching {
+        val ctx = construirContexto(cfg)
+        val url = "${urlBase(cfg)}${entrada.ruta.trimStart('/')}"
+        val f = SmbFile(url, ctx)
+        eliminarRecursivo(f)
+        Unit
+    }
+
+    private fun eliminarRecursivo(f: SmbFile) {
+        if (f.isDirectory) {
+            f.listFiles().forEach { hijo -> eliminarRecursivo(hijo) }
+            f.delete()
+        } else {
+            f.delete()
+        }
+    }
+
     private fun copiarConProgreso(
         entrada: InputStream,
         salida: OutputStream,
