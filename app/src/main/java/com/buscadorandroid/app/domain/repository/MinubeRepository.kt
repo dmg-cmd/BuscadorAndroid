@@ -17,6 +17,9 @@ interface MinubeRepository {
     /** Lista el contenido de una carpeta remota (ruta relativa al share; "" = raíz). */
     suspend fun listar(cfg: MinubeConfig, ruta: String): Result<List<EntradaSmb>>
 
+    /** Busca archivos/carpetas por nombre dentro de la ruta base y sus subcarpetas. */
+    suspend fun buscar(cfg: MinubeConfig, rutaBase: String, termino: String): Result<List<EntradaSmb>>
+
     /** Crea una subcarpeta dentro de la ruta indicada. */
     suspend fun crearCarpeta(cfg: MinubeConfig, ruta: String, nombre: String): Result<Unit>
 

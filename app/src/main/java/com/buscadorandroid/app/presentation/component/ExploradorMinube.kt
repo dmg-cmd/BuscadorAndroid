@@ -66,17 +66,39 @@ fun ExploradorMinube(
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text("MiNube (SMB)") },
+                        title = {
+                            Column {
+                                Text("MiNube (SMB)")
+                                val ruta = estado.rutaActual
+                                Text(
+                                    if (ruta.isBlank()) "Raíz del recurso" else ruta,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        },
                         navigationIcon = {
-                            IconButton(onClick = onCerrar) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Cerrar")
+                            IconButton(
+                                onClick = {
+                                    if (estado.rutaActual.isNotBlank()) viewModel.subirNivel()
+                                    else onCerrar()
+                                }
+                            ) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
                             }
                         },
                         actions = {
+                            if (estado.rutaActual.isNotBlank()) {
+                                IconButton(onClick = { viewModel.subirNivel() }) {
+                                    Icon(Icons.Filled.ArrowUpward, "Subir un nivel")
+                                }
+                            }
                             if (estado.fase == FaseMinube.CONECTADO) {
                                 IconButton(onClick = { mostrarDialogoCarpeta = true }) {
                                     Icon(Icons.Filled.CreateNewFolder, "Crear carpeta")
                                 }
+                            }
+                            IconButton(onClick = onCerrar) {
+                                Icon(Icons.Filled.Close, "Cerrar")
                             }
                         }
                     )
@@ -96,7 +118,38 @@ fun ExploradorMinube(
                         ) { CircularProgressIndicator() }
 
                         FaseMinube.ERROR -> PantallaError(estado, onCerrar)
-                        FaseMinube.CONECTADO -> ListaContenido(estado, viewModel)
+                        FaseMinube.CONECTADO -> {
+                            var textoBusqueda by remember { mutableStateOf("") }
+                            LaunchedEffect(estado.buscando) {
+                                if (!estado.buscando) textoBusqueda = ""
+                            }
+                            Column(Modifier.fillMaxSize()) {
+                                OutlinedTextField(
+                                    value = textoBusqueda,
+                                    onValueChange = {
+                                        textoBusqueda = it
+                                        viewModel.alCambiarBusqueda(it)
+                                    },
+                                    label = { Text("Buscar en esta carpeta y subcarpetas") },
+                                    singleLine = true,
+                                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                    trailingIcon = {
+                                        if (textoBusqueda.isNotEmpty()) {
+                                            IconButton(onClick = {
+                                                textoBusqueda = ""
+                                                viewModel.alCambiarBusqueda("")
+                                            }) { Icon(Icons.Filled.Close, "Limpiar búsqueda") }
+                                        }
+                                    }
+                                )
+                                ListaContenido(
+                                    estado = estado,
+                                    viewModel = viewModel,
+                                    buscando = estado.buscando,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
                     }
 
                     if (estado.progreso != null) {
@@ -210,10 +263,15 @@ private fun Campo(
 }
 
 @Composable
-private fun ListaContenido(estado: MinubeUiState, viewModel: MinubeViewModel) {
-    Column(Modifier.fillMaxSize()) {
+private fun ListaContenido(
+    estado: MinubeUiState,
+    viewModel: MinubeViewModel,
+    buscando: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier) {
         Text(
-            "Ruta: /${estado.rutaActual}",
+            if (buscando) "Resultados de la búsqueda:" else "Ruta: /${estado.rutaActual}",
             Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             style = MaterialTheme.typography.labelMedium
         )
@@ -231,20 +289,29 @@ private fun ListaContenido(estado: MinubeUiState, viewModel: MinubeViewModel) {
         }
         LazyColumn(Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
             items(estado.entradas, key = { it.ruta }) { e ->
-                FilaEntrada(e, estado.seleccion.contains(e.ruta), viewModel)
+                FilaEntrada(e, estado.seleccion.contains(e.ruta), viewModel, buscando)
             }
         }
     }
 }
 
 @Composable
-private fun FilaEntrada(e: EntradaSmb, seleccionada: Boolean, viewModel: MinubeViewModel) {
+private fun FilaEntrada(
+    e: EntradaSmb,
+    seleccionada: Boolean,
+    viewModel: MinubeViewModel,
+    buscando: Boolean
+) {
     Row(
         Modifier
             .fillMaxWidth()
             .clickable {
-                if (e.esDirectorio) viewModel.entrarCarpeta(e.nombre)
-                else viewModel.toggleSeleccion(e.ruta)
+                if (e.esDirectorio) {
+                    if (buscando) viewModel.irA(e.ruta)
+                    else viewModel.entrarCarpeta(e.nombre)
+                } else {
+                    viewModel.toggleSeleccion(e.ruta)
+                }
             }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -257,7 +324,14 @@ private fun FilaEntrada(e: EntradaSmb, seleccionada: Boolean, viewModel: MinubeV
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(e.nombre, style = MaterialTheme.typography.bodyMedium)
-            if (!e.esDirectorio) {
+            if (buscando) {
+                val carpeta = e.ruta.substringBeforeLast('/', "")
+                Text(
+                    if (carpeta.isBlank()) "En la raíz" else "En: $carpeta",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else if (!e.esDirectorio) {
                 Text(
                     Archivo.formatearTamano(e.tamanoBytes),
                     style = MaterialTheme.typography.labelSmall,

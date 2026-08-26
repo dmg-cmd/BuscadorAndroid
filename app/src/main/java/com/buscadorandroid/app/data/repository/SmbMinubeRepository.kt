@@ -67,6 +67,38 @@ class SmbMinubeRepository @Inject constructor() : MinubeRepository {
         }.sortedWith(compareBy({ !it.esDirectorio }, { it.nombre.lowercase() }))
     }
 
+    override suspend fun buscar(cfg: MinubeConfig, rutaBase: String, termino: String): Result<List<EntradaSmb>> = runCatching {
+        val ctx = construirContexto(cfg)
+        val q = termino.lowercase()
+        val resultados = mutableListOf<EntradaSmb>()
+        val pendientes = ArrayDeque<String>().apply { add(rutaBase.trim('/')) }
+        while (pendientes.isNotEmpty()) {
+            val rel = pendientes.removeFirst()
+            val url = if (rel.isBlank()) urlBase(cfg) else urlCarpeta(cfg, rel)
+            val hijos = runCatching { SmbFile(url, ctx).listFiles() }.getOrDefault(emptyArray())
+            for (f in hijos) {
+                val nombreCrudo = f.name.trimEnd('/')
+                if (nombreCrudo.isBlank()) continue
+                val relHijo = if (rel.isBlank()) nombreCrudo else "$rel/$nombreCrudo"
+                if (nombreCrudo.lowercase().contains(q)) {
+                    resultados.add(
+                        EntradaSmb(
+                            nombre = nombreCrudo,
+                            ruta = relHijo,
+                            esDirectorio = f.isDirectory,
+                            tamanoBytes = f.length(),
+                            fechaModificacion = f.lastModified()
+                        )
+                    )
+                }
+                if (f.isDirectory) pendientes.add(relHijo)
+                if (resultados.size >= 5000) break
+            }
+            if (resultados.size >= 5000) break
+        }
+        resultados.sortedWith(compareBy({ !it.esDirectorio }, { it.nombre.lowercase() }))
+    }
+
     override suspend fun crearCarpeta(cfg: MinubeConfig, ruta: String, nombre: String): Result<Unit> = runCatching {
         val ctx = construirContexto(cfg)
         val nuevaUrl = "${urlCarpeta(cfg, ruta)}${nombre.trim('/')}/"

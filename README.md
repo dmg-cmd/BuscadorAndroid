@@ -107,6 +107,10 @@ compartiendo una carpeta por SMB/CIFS).
 3. Si la conexión es correcta, verás los archivos y carpetas. Desde ahí puedes:
    - **Subir aquí** los archivos que seleccionaste en la app.
    - **Crear carpeta**, entrar en subcarpetas y **descargar** a tu teléfono.
+   - **Volver atrás:** toca la flecha hacia arriba (o la flecha de atrás) para subir un nivel
+     a la carpeta superior; la equis (X) cierra el explorador.
+   - **Buscar:** escribe en el buscador para encontrar archivos dentro de esa carpeta y sus
+     subcarpetas. Toca un resultado para ir a su ubicación o seleccionarlo y descargarlo.
 4. Tus datos se guardan cifrados; la próxima vez se conectará solo.
 
 > **Sugerencia:** si no tienes un servidor propio, puedes crear una carpeta compartida en

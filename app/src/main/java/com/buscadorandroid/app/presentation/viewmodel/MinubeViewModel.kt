@@ -33,6 +33,7 @@ data class MinubeUiState(
     val colaSubida: List<Archivo> = emptyList(),
     val progreso: ProgresoMinube? = null,
     val mensaje: String? = null,
+    val buscando: Boolean = false,
     val cfg: MinubeConfig? = null
 )
 
@@ -47,6 +48,7 @@ class MinubeViewModel @Inject constructor(
     val estado: StateFlow<MinubeUiState> = _estado.asStateFlow()
 
     private var cfgActual: MinubeConfig? = null
+    private var terminoBusqueda: String = ""
 
     init {
         if (ajustes.hayConfig()) {
@@ -75,6 +77,7 @@ class MinubeViewModel @Inject constructor(
     }
 
     private fun listar(ruta: String) {
+        terminoBusqueda = ""
         val cfg = cfgActual ?: return
         viewModelScope.launch(Dispatchers.IO) {
             repositorio.listar(cfg, ruta)
@@ -84,7 +87,8 @@ class MinubeViewModel @Inject constructor(
                         rutaActual = ruta,
                         entradas = lista,
                         seleccion = emptySet(),
-                        mensaje = null
+                        mensaje = null,
+                        buscando = false
                     )
                 }
                 .onFailure { e ->
@@ -100,6 +104,73 @@ class MinubeViewModel @Inject constructor(
         val actual = _estado.value.rutaActual
         val nueva = if (actual.isBlank()) nombre else "${actual.trim('/')}/$nombre"
         listar(nueva)
+    }
+
+    /** Sube un nivel: vuelve a la carpeta superior dentro del recurso compartido. */
+    fun subirNivel() {
+        val actual = _estado.value.rutaActual
+        if (actual.isBlank()) return
+        val padre = actual.removeSuffix("/").substringBeforeLast('/', "")
+        _estado.value = _estado.value.copy(
+            rutaActual = padre,
+            entradas = emptyList(),
+            fase = FaseMinube.CONECTANDO,
+            seleccion = emptySet(),
+            mensaje = null
+        )
+        listar(padre)
+    }
+
+    /** Navega directamente a una ruta completa (usado al abrir un resultado de búsqueda). */
+    fun irA(ruta: String) {
+        terminoBusqueda = ""
+        _estado.value = _estado.value.copy(
+            rutaActual = ruta,
+            entradas = emptyList(),
+            fase = FaseMinube.CONECTANDO,
+            seleccion = emptySet(),
+            mensaje = null,
+            buscando = false
+        )
+        listar(ruta)
+    }
+
+    /** Cambia el término de búsqueda: filtra en la carpeta actual y subcarpetas. */
+    fun alCambiarBusqueda(texto: String) {
+        terminoBusqueda = texto
+        if (texto.isBlank()) {
+            listar(_estado.value.rutaActual)
+        } else {
+            buscar(texto)
+        }
+    }
+
+    private fun buscar(termino: String) {
+        val cfg = cfgActual ?: return
+        val base = _estado.value.rutaActual
+        _estado.value = _estado.value.copy(
+            buscando = true,
+            entradas = emptyList(),
+            fase = FaseMinube.CONECTANDO,
+            seleccion = emptySet(),
+            mensaje = null
+        )
+        viewModelScope.launch(Dispatchers.IO) {
+            repositorio.buscar(cfg, base, termino)
+                .onSuccess { lista ->
+                    _estado.value = _estado.value.copy(
+                        fase = FaseMinube.CONECTADO,
+                        entradas = lista,
+                        mensaje = if (lista.isEmpty()) "Sin coincidencias para '$termino'" else null
+                    )
+                }
+                .onFailure { e ->
+                    _estado.value = _estado.value.copy(
+                        fase = FaseMinube.CONECTADO,
+                        mensaje = "Error al buscar: ${e.message}"
+                    )
+                }
+        }
     }
 
     fun subirCola() {
