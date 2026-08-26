@@ -975,6 +975,11 @@ fun PantallaBusqueda(
                             descripcion = "Cambia el aspecto de la pantalla. Toca para pasar de claro a oscuro, o para dejarlo igual que el resto del teléfono (claro u oscuro según tenga configurado el sistema)."
                         )
                         FilaAyuda(
+                            icono = Icons.Filled.FolderShared,
+                            titulo = "MiNube (carpeta de red)",
+                            descripcion = "Es el botón con el icono de una carpeta compartida, junto a la ayuda. Sirve para conectarte a tu propia carpeta de red privada que tengas en casa o en el trabajo (por ejemplo MiNube, un NAS o un equipo que comparta archivos en la red local). Una vez conectado puedes ver, subir y bajar archivos, crear carpetas y buscar dentro de esa carpeta. Para volver a la carpeta anterior usa la flecha hacia arriba; la equis cierra la ventana. Tus datos de acceso se guardan cifrados en el teléfono y la conexión solo va a tu red local, no a internet."
+                        )
+                        FilaAyuda(
                             icono = Icons.Filled.Help,
                             titulo = "Ayuda (?)",
                             descripcion = "Muestra esta misma ventana con explicaciones sencillas de los botones."
