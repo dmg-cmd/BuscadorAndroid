@@ -55,16 +55,13 @@
                 tools:node="remove" />
         </provider>
 
-        <!-- FileProvider para abrir (previsualizar) archivos de MiNube con apps del sistema -->
+        <!-- MiNubeFileProvider: proveedor propio para abrir (previsualizar) archivos de
+             MiNube con apps del sistema, sin depender de un recurso res/xml. -->
         <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:name=".presentation.component.MiNubeFileProvider"
+            android:authorities="${applicationId}.minubefiles"
             android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="androidx.core.content.FileProvider"
-                android:resource="@xml/file_paths" />
-        </provider>
+            android:grantUriPermissions="true" />
 
     </application>
 

@@ -3,7 +3,7 @@ package com.buscadorandroid.app.presentation.viewmodel
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.core.content.FileProvider
+import com.buscadorandroid.app.presentation.component.MiNubeFileProvider
 import androidx.documentfile.provider.DocumentFile
 import java.io.File
 import androidx.lifecycle.ViewModel
@@ -273,7 +273,7 @@ class MinubeViewModel @Inject constructor(
     /**
      * Abre un archivo de la nube con la aplicación del sistema (galería, vídeo, música, etc.).
      * Lo descarga primero a la caché del teléfono y luego lanza un Intent ACTION_VIEW
-     * con un Uri de FileProvider, para no salir de la red local.
+     * con un content Uri de [MiNubeFileProvider], para no salir de la red local.
      */
     fun abrir(entrada: EntradaSmb) {
         val cfg = cfgActual ?: return
@@ -285,11 +285,7 @@ class MinubeViewModel @Inject constructor(
             _estado.value = _estado.value.copy(progreso = null)
             resultado.onSuccess { archivo ->
                 try {
-                    val uri = FileProvider.getUriForFile(
-                        contexto,
-                        contexto.packageName + ".fileprovider",
-                        archivo
-                    )
+                    val uri = MiNubeFileProvider.uriPara(contexto, archivo.name)
                     val intent = Intent(Intent.ACTION_VIEW).apply {
                         setDataAndType(uri, mimeDesde(entrada.nombre))
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
